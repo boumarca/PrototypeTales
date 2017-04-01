@@ -10,7 +10,7 @@ public enum Weapon
 
 public enum AttackType
 {
-    None,
+    None = -1,
     Punch,
     Kick
 }
@@ -87,6 +87,8 @@ public class RPGCharacterControllerFREE : MonoBehaviour
     Stats stats;
 
     [SerializeField]
+    int attackChargeAmount = 5;
+    [SerializeField]
     int maxCombo = 3;
     [SerializeField]
     float ComboCooldownTime = 0.5f;
@@ -102,6 +104,8 @@ public class RPGCharacterControllerFREE : MonoBehaviour
     Collider KickHitbox;
     [SerializeField]
     GameObject shield;
+    [SerializeField]
+    Familiar[] familiars;
     #endregion
 
     #region Initialization
@@ -687,6 +691,12 @@ public class RPGCharacterControllerFREE : MonoBehaviour
                 RPGCharacterControllerFREE controller = overlaps[i].GetComponent<RPGCharacterControllerFREE>();
                 if (controller != null && !controller.isDead)
                 {
+                    if (familiars.Length > 0)
+                    {
+                        familiars[(int)attackType].IncreaseCharge(attackChargeAmount);
+                        stats.IncreaseCharge(attackChargeAmount);
+                    }
+
                     controller.GetHit();
                     Stats other = overlaps[i].GetComponent<Stats>();
                     if (attackType == AttackType.Kick)

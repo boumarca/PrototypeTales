@@ -18,14 +18,23 @@ public class Stats : MonoBehaviour {
     public int Atk { get { return (int)(RawAtk * BuffAtk); } }
     public int Def { get { return (int)(RawDef * BuffDef * blockBonus); } }
 
+    const int ChargeMax = 100;
+    int ChargeAmount;
+
     [SerializeField]
     RectTransform healthBar;
+    [SerializeField]
+    RectTransform chargeBar;
+    [SerializeField]
+    int StartCharge;
 
     float blockBonus = 1f;
 
     void Start()
     {
         CurrentHP = MaxHP;
+        if(chargeBar != null)
+            IncreaseCharge(StartCharge);
     }
 
     public int Attack(Stats other)
@@ -44,5 +53,14 @@ public class Stats : MonoBehaviour {
     public void Defend(bool defend)
     {
         blockBonus = defend ? 1.5f : 1;
+    }
+
+    public void IncreaseCharge(int amount)
+    {
+        if (chargeBar != null && ChargeAmount < ChargeMax)
+        {
+            ChargeAmount += amount;
+            chargeBar.localScale = new Vector3((float)ChargeAmount / ChargeMax, 1, 1);
+        }
     }
 }
