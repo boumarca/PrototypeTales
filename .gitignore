@@ -2,3 +2,4 @@ PrototypeTales/Library/
 PrototypeTales/Temp/
 *.sln
 *.csproj
+*.suo

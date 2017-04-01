@@ -72,11 +72,26 @@ public class RPGCharacterControllerFREE : MonoBehaviour
 	public float knockbackMultiplier = 1f;
 	bool isKnockback;
 
-	#endregion
+    //My stuff
+    [Header("My stuff")]
+    int comboCount;
+    bool hasAttacked; 
 
-	#region Initialization
+    [SerializeField]
+    int maxCombo = 3;
+    [SerializeField]
+    float ComboCooldownTime = 0.5f;
+    [SerializeField]
+    float PunchAttackDelay = 0.3f;
+    [SerializeField]
+    float KickAttackDelay = 0.5f;
+    [SerializeField]
+    float ComboWindowInput = 0.3f;
+    #endregion
 
-	void Start() 
+    #region Initialization
+
+    void Start() 
 	{
 		//set the animator component
 		animator = GetComponentInChildren<Animator>();
@@ -116,19 +131,19 @@ public class RPGCharacterControllerFREE : MonoBehaviour
 			}
 			if(Input.GetButtonDown("AttackL") && canAction && isGrounded && !isBlocking)
 			{
-				Attack(1);
+				Attack();
 			}
 			if(Input.GetButtonDown("AttackR") && canAction && isGrounded && !isBlocking)
 			{
-				Attack(2);
+				Attack();
 			}
 			if(Input.GetButtonDown("CastL") && canAction && isGrounded && !isBlocking && !isStrafing)
 			{
-				AttackKick(1);
+				AttackKick();
 			}
 			if(Input.GetButtonDown("CastR") && canAction && isGrounded && !isBlocking && !isStrafing)
 			{
-				AttackKick(2);
+				AttackKick();
 			}
 			//if strafing
 			if(Input.GetKey(KeyCode.LeftShift) || Input.GetAxisRaw("TargetBlock") > .1 && canAction)
@@ -438,8 +453,9 @@ public class RPGCharacterControllerFREE : MonoBehaviour
 	//1 = Left
 	//2 = Right
 	//3 = Dual
-	void Attack(int attackSide)
+	void Attack()
 	{
+        int attackSide = comboCount % 2 + 1;
 		if(canAction)
 		{
 			if(weapon == Weapon.UNARMED)
@@ -459,14 +475,23 @@ public class RPGCharacterControllerFREE : MonoBehaviour
 					if(attackSide != 3)
 					{
 						animator.SetTrigger("Attack" + (attackNumber).ToString() + "Trigger");
-						if(leftWeapon == 12 || leftWeapon == 14 || rightWeapon == 13 || rightWeapon == 15)
-						{
-							StartCoroutine(_LockMovementAndAttack(0, .75f));
-						} 
-						else
-						{
-							StartCoroutine(_LockMovementAndAttack(0, .6f));
-						}
+						//if(leftWeapon == 12 || leftWeapon == 14 || rightWeapon == 13 || rightWeapon == 15)
+						//{
+						//	StartCoroutine(_LockMovementAndAttack(0, .75f));
+						//} 
+						//else
+						//{
+                            float delay = PunchAttackDelay;
+                            comboCount++;
+                            hasAttacked = true;
+                            if (comboCount == maxCombo)
+                            {
+                                Debug.Log("Cooldown");
+                                delay += ComboCooldownTime;
+                                comboCount = 0;
+                            }
+							StartCoroutine(_LockMovementAndAttack(0, delay));
+						//}
 					}
 					else
 					{
@@ -487,8 +512,9 @@ public class RPGCharacterControllerFREE : MonoBehaviour
 		}
 	}
 
-	void AttackKick(int kickSide)
+	void AttackKick()
 	{
+        int kickSide = comboCount % 2 + 1;
 		if(isGrounded)
 		{
 			if(kickSide == 1)
@@ -499,7 +525,16 @@ public class RPGCharacterControllerFREE : MonoBehaviour
 			{
 				animator.SetTrigger("AttackKick2Trigger");
 			}
-			StartCoroutine(_LockMovementAndAttack(0, .8f));
+            float delay = KickAttackDelay;
+            comboCount++;
+            hasAttacked = true;
+            if (comboCount == maxCombo)
+            {
+                Debug.Log("Cooldown");
+                delay += ComboCooldownTime;
+                comboCount = 0;
+            }
+            StartCoroutine(_LockMovementAndAttack(0, delay));
 		}
 	}
 
@@ -710,9 +745,16 @@ public class RPGCharacterControllerFREE : MonoBehaviour
 		inputVec = new Vector3(0, 0, 0);
 		animator.applyRootMotion = true;
 		yield return new WaitForSeconds(lockTime);
+        hasAttacked = false;
 		canAction = true;
 		canMove = true;
 		animator.applyRootMotion = false;
+        if (comboCount != 0)
+        {
+            yield return new WaitForSeconds(ComboWindowInput);
+            if (!hasAttacked)
+                comboCount = 0;
+        }
 	}
 	
 	#endregion
@@ -721,6 +763,7 @@ public class RPGCharacterControllerFREE : MonoBehaviour
 
 	void OnGUI()
 	{
+        return;
 		if(!isDead)
 		{
 			if(canAction && !isRelax)
@@ -754,22 +797,22 @@ public class RPGCharacterControllerFREE : MonoBehaviour
 							//ATTACK LEFT
 							if(GUI.Button(new Rect(25, 85, 100, 30), "Attack L"))
 							{
-								Attack(1);
+								Attack();
 							}
 							//ATTACK RIGHT
 							if(GUI.Button(new Rect(130, 85, 100, 30), "Attack R"))
 							{
-								Attack(2);
+								Attack();
 							}
 							if(weapon == Weapon.UNARMED) 
 							{
 								if(GUI.Button (new Rect (25, 115, 100, 30), "Left Kick")) 
 								{
-									AttackKick (1);
+									AttackKick ();
 								}
 								if(GUI.Button (new Rect (130, 115, 100, 30), "Right Kick")) 
 								{
-									AttackKick (2);
+									AttackKick ();
 								}
 							}
 							if(GUI.Button(new Rect(30, 240, 100, 30), "Get Hit"))

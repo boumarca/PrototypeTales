@@ -306,6 +306,14 @@ Prefab:
       propertyPath: sceneCamera
       value: 
       objectReference: {fileID: 1025480228}
+    - target: {fileID: 11400000, guid: b1cc94d26cd016d479aa5b522d88da0a, type: 2}
+      propertyPath: ComboCooldownTime
+      value: 0.3
+      objectReference: {fileID: 0}
+    - target: {fileID: 11400000, guid: b1cc94d26cd016d479aa5b522d88da0a, type: 2}
+      propertyPath: PunchAttackDelay
+      value: 0.3
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: b1cc94d26cd016d479aa5b522d88da0a, type: 2}
   m_IsPrefabParent: 0
