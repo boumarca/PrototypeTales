@@ -7,6 +7,13 @@ public enum Weapon
 	UNARMED = 0,
 	RELAX = 8
 }
+
+public enum AttackType
+{
+    None,
+    Punch,
+    Kick
+}
 	
 public class RPGCharacterControllerFREE : MonoBehaviour 
 {
@@ -75,7 +82,8 @@ public class RPGCharacterControllerFREE : MonoBehaviour
     //My stuff
     [Header("My stuff")]
     int comboCount;
-    bool hasAttacked; 
+    bool hasAttacked;
+    AttackType attackType;
 
     [SerializeField]
     int maxCombo = 3;
@@ -87,6 +95,10 @@ public class RPGCharacterControllerFREE : MonoBehaviour
     float KickAttackDelay = 0.5f;
     [SerializeField]
     float ComboWindowInput = 0.3f;
+    [SerializeField]
+    Collider PunchHitbox;
+    [SerializeField]
+    Collider KickHitbox;
     #endregion
 
     #region Initialization
@@ -96,6 +108,9 @@ public class RPGCharacterControllerFREE : MonoBehaviour
 		//set the animator component
 		animator = GetComponentInChildren<Animator>();
 		rb = GetComponent<Rigidbody>();
+
+        if (gameObject.layer == LayerMask.NameToLayer("Enemy"))
+            this.enabled = false;
 	}
 
 	#endregion
@@ -484,6 +499,7 @@ public class RPGCharacterControllerFREE : MonoBehaviour
                             float delay = PunchAttackDelay;
                             comboCount++;
                             hasAttacked = true;
+                        attackType = AttackType.Punch;
                             if (comboCount == maxCombo)
                             {
                                 Debug.Log("Cooldown");
@@ -528,6 +544,7 @@ public class RPGCharacterControllerFREE : MonoBehaviour
             float delay = KickAttackDelay;
             comboCount++;
             hasAttacked = true;
+            attackType = AttackType.Kick;
             if (comboCount == maxCombo)
             {
                 Debug.Log("Cooldown");
@@ -639,7 +656,24 @@ public class RPGCharacterControllerFREE : MonoBehaviour
 	//Animation Events
 	void Hit()
 	{
+        Collider c = null;
+        if (attackType == AttackType.Punch)
+            c = PunchHitbox;
+        else if (attackType == AttackType.Kick)
+            c = KickHitbox;
 
+        if (c != null)
+        {
+            Collider[] overlaps = Physics.OverlapBox(c.bounds.center, c.bounds.extents, c.transform.rotation, 1 << LayerMask.NameToLayer("Enemy"));
+            for (int i = 0; i < overlaps.Length; i++)
+            {
+                RPGCharacterControllerFREE controller = overlaps[i].GetComponent<RPGCharacterControllerFREE>();
+                if (controller != null)
+                {
+                    controller.GetHit();
+                }
+            } 
+        }
 	}
 
 	void FootL()
@@ -753,7 +787,10 @@ public class RPGCharacterControllerFREE : MonoBehaviour
         {
             yield return new WaitForSeconds(ComboWindowInput);
             if (!hasAttacked)
+            {
+                attackType = AttackType.None;
                 comboCount = 0;
+            }
         }
 	}
 	
