@@ -18,6 +18,9 @@ public class Stats : MonoBehaviour {
     public int Atk { get { return (int)(RawAtk * BuffAtk); } }
     public int Def { get { return (int)(RawDef * BuffDef * blockBonus); } }
 
+    [SerializeField]
+    RectTransform healthBar;
+
     float blockBonus = 1f;
 
     void Start()
@@ -33,6 +36,7 @@ public class Stats : MonoBehaviour {
     public void Damage(int damage)
     {
         CurrentHP -= damage;
+        healthBar.localScale = new Vector3(Mathf.Clamp((float)CurrentHP / MaxHP, 0f, 1f), 1, 1);
         if (CurrentHP <= 0)
             Die();
     }
