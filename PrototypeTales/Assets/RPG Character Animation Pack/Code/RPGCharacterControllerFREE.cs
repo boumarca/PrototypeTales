@@ -99,6 +99,8 @@ public class RPGCharacterControllerFREE : MonoBehaviour
     Collider PunchHitbox;
     [SerializeField]
     Collider KickHitbox;
+    [SerializeField]
+    GameObject shield;
     #endregion
 
     #region Initialization
@@ -129,7 +131,12 @@ public class RPGCharacterControllerFREE : MonoBehaviour
 			} 
 			Rolling();
 			Jumping();
-			if(Input.GetButtonDown("LightHit") && canAction && isGrounded && !isBlocking)
+            if (canAction && isGrounded)
+            {
+                Block(Input.GetButton("Shield"));
+            }
+            
+            if (Input.GetButtonDown("LightHit") && canAction && isGrounded && !isBlocking)
 			{
 				GetHit();
 			}
@@ -460,9 +467,15 @@ public class RPGCharacterControllerFREE : MonoBehaviour
 		}
 	}
 
-	#endregion
+    #endregion
 
-	#region MiscMethods
+    #region MiscMethods
+
+    void Block(bool block)
+    {
+        shield.SetActive(block);
+        isBlocking = block;
+    }
 
 	//0 = No side
 	//1 = Left
