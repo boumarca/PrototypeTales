@@ -84,6 +84,7 @@ public class RPGCharacterControllerFREE : MonoBehaviour
     int comboCount;
     bool hasAttacked;
     AttackType attackType;
+    Stats stats;
 
     [SerializeField]
     int maxCombo = 3;
@@ -110,6 +111,8 @@ public class RPGCharacterControllerFREE : MonoBehaviour
 		//set the animator component
 		animator = GetComponentInChildren<Animator>();
 		rb = GetComponent<Rigidbody>();
+        stats = GetComponent<Stats>();
+        stats.Die += () => StartCoroutine(_Death());
 
         if (gameObject.layer == LayerMask.NameToLayer("Enemy"))
             this.enabled = false;
@@ -475,6 +478,7 @@ public class RPGCharacterControllerFREE : MonoBehaviour
     {
         shield.SetActive(block);
         isBlocking = block;
+        stats.Defend(block);
     }
 
 	//0 = No side
@@ -681,9 +685,15 @@ public class RPGCharacterControllerFREE : MonoBehaviour
             for (int i = 0; i < overlaps.Length; i++)
             {
                 RPGCharacterControllerFREE controller = overlaps[i].GetComponent<RPGCharacterControllerFREE>();
-                if (controller != null)
+                if (controller != null && !controller.isDead)
                 {
                     controller.GetHit();
+                    Stats other = overlaps[i].GetComponent<Stats>();
+                    if (attackType == AttackType.Kick)
+                        stats.BuffAtk *= 1.25f;
+                    other.Damage(stats.Attack(other));
+                    if (attackType == AttackType.Kick)
+                        stats.BuffAtk /= 1.25f;
                 }
             } 
         }
