@@ -46,19 +46,31 @@ public class FamiliarSelector : MonoBehaviour {
 
     IEnumerator DuringFusion()
     {
+        Familiar fused = selectedFamiliar;
         var main = fusionFX.main;
-        main.startColor = selectedFamiliar.image.color;
+        main.startColor = fused.image.color;
         fusionFX.Play();
         player.IsInFusion = true;
-        selectedFamiliar.isInFusion = true;
-        while (!player.ChargeIsEmpty && !selectedFamiliar.ChargeIsEmpty)
+        fused.isInFusion = true;
+
+        if (fused == familiars[0])
+            player.BuffAtk *= 2;
+        else if (fused == familiars[1])
+            player.BuffDef *= 2;
+
+        while (!player.ChargeIsEmpty && !fused.ChargeIsEmpty)
         {
             player.IncreaseCharge(-ChargeDecreaseRate * Time.deltaTime);
-            selectedFamiliar.IncreaseCharge(-ChargeDecreaseRate * Time.deltaTime);
+            fused.IncreaseCharge(-ChargeDecreaseRate * Time.deltaTime);
             yield return new WaitForSeconds(0);
         }
         fusionFX.Stop();
         player.IsInFusion = false;
-        selectedFamiliar.isInFusion = false;
+        fused.isInFusion = false;
+
+        if (fused == familiars[0])
+            player.BuffAtk /= 2;
+        else if (fused == familiars[1])
+            player.BuffDef /= 2;
     }
 }

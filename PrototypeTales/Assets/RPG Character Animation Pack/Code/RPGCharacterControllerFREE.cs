@@ -11,8 +11,8 @@ public enum Weapon
 public enum AttackType
 {
     None = -1,
-    Punch,
-    Kick
+    Kick,
+    Punch
 }
 	
 public class RPGCharacterControllerFREE : MonoBehaviour 
@@ -691,20 +691,24 @@ public class RPGCharacterControllerFREE : MonoBehaviour
                 RPGCharacterControllerFREE controller = overlaps[i].GetComponent<RPGCharacterControllerFREE>();
                 if (controller != null && !controller.isDead)
                 {
-                    if (familiars.Length > 0)
-                    {
-                        if(!familiars[(int)attackType].isInFusion)
-                            familiars[(int)attackType].IncreaseCharge(attackChargeAmount);
+                    
+                    if(!familiars[(int)attackType].isInFusion)
+                        familiars[(int)attackType].IncreaseCharge(attackChargeAmount);
 
-                        if(!stats.IsInFusion)
-                            stats.IncreaseCharge(attackChargeAmount);
-                    }
+                    if(!stats.IsInFusion)
+                        stats.IncreaseCharge(attackChargeAmount);  
 
                     controller.GetHit();
                     Stats other = overlaps[i].GetComponent<Stats>();
                     if (attackType == AttackType.Kick)
                         stats.BuffAtk *= 1.25f;
-                    other.Damage(stats.Attack(other));
+
+                    int damage = stats.Attack(other);
+                    other.Damage(damage);
+
+                    if (familiars[1].isInFusion)
+                        stats.Heal(Mathf.RoundToInt(damage / 2f));
+
                     if (attackType == AttackType.Kick)
                         stats.BuffAtk /= 1.25f;
                 }

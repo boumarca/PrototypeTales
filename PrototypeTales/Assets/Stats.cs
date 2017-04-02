@@ -70,4 +70,12 @@ public class Stats : MonoBehaviour {
         }
     }
 
+    public void Heal(int heal)
+    {
+        CurrentHP += heal;
+        healthBar.localScale = new Vector3(Mathf.Clamp((float)CurrentHP / MaxHP, 0f, 1f), 1, 1);
+
+        if (CurrentHP > MaxHP)
+            CurrentHP = MaxHP;
+    }
 }
