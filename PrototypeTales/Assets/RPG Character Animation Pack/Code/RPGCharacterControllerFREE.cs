@@ -138,7 +138,7 @@ public class RPGCharacterControllerFREE : MonoBehaviour
 			} 
 			Rolling();
 			Jumping();
-            if (canAction && isGrounded)
+            if (canAction && isGrounded && moveSpeed == 0)
             {
                 Block(Input.GetButton("Shield"));
             }
@@ -693,8 +693,11 @@ public class RPGCharacterControllerFREE : MonoBehaviour
                 {
                     if (familiars.Length > 0)
                     {
-                        familiars[(int)attackType].IncreaseCharge(attackChargeAmount);
-                        stats.IncreaseCharge(attackChargeAmount);
+                        if(!familiars[(int)attackType].isInFusion)
+                            familiars[(int)attackType].IncreaseCharge(attackChargeAmount);
+
+                        if(!stats.IsInFusion)
+                            stats.IncreaseCharge(attackChargeAmount);
                     }
 
                     controller.GetHit();

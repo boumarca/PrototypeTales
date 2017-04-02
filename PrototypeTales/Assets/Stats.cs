@@ -19,7 +19,7 @@ public class Stats : MonoBehaviour {
     public int Def { get { return (int)(RawDef * BuffDef * blockBonus); } }
 
     const int ChargeMax = 100;
-    int ChargeAmount;
+    float ChargeAmount;
 
     [SerializeField]
     RectTransform healthBar;
@@ -29,6 +29,11 @@ public class Stats : MonoBehaviour {
     int StartCharge;
 
     float blockBonus = 1f;
+
+    public bool IsInFusion;
+
+    public bool ChargeIsFull { get { return ChargeAmount >= ChargeMax; } }
+    public bool ChargeIsEmpty { get { return ChargeAmount == 0; } }
 
     void Start()
     {
@@ -55,12 +60,14 @@ public class Stats : MonoBehaviour {
         blockBonus = defend ? 1.5f : 1;
     }
 
-    public void IncreaseCharge(int amount)
+    public void IncreaseCharge(float amount)
     {
-        if (chargeBar != null && ChargeAmount < ChargeMax)
+        if (chargeBar != null)
         {
             ChargeAmount += amount;
-            chargeBar.localScale = new Vector3((float)ChargeAmount / ChargeMax, 1, 1);
+            ChargeAmount = Mathf.Clamp(ChargeAmount, 0, ChargeMax);
+            chargeBar.localScale = new Vector3(ChargeAmount / ChargeMax, 1, 1);
         }
     }
+
 }
