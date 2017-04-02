@@ -27,8 +27,11 @@ public class Stats : MonoBehaviour {
     RectTransform chargeBar;
     [SerializeField]
     int StartCharge;
+    [SerializeField]
+    int MaxHitsBeforeGuardBreak;
 
     float blockBonus = 1f;
+    int currentBlockHits;
 
     public bool IsInFusion;
 
@@ -53,6 +56,21 @@ public class Stats : MonoBehaviour {
         healthBar.localScale = new Vector3(Mathf.Clamp((float)CurrentHP / MaxHP, 0f, 1f), 1, 1);
         if (CurrentHP <= 0)
             Die();
+    }
+
+    public bool BreakGuard(int force)
+    {
+        currentBlockHits += force;
+
+        if (currentBlockHits >= MaxHitsBeforeGuardBreak)
+        {
+            currentBlockHits = 0;
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
 
     public void Defend(bool defend)

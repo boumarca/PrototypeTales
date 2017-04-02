@@ -615,6 +615,12 @@ public class RPGCharacterControllerFREE : MonoBehaviour
 		} 
 	}
 
+    void BreakGuard()
+    {
+        isBlocking = false;
+        GetHit();
+    }
+
 	void GetHit()
 	{
 		int hits = 5;
@@ -698,13 +704,20 @@ public class RPGCharacterControllerFREE : MonoBehaviour
                     if(!stats.IsInFusion)
                         stats.IncreaseCharge(attackChargeAmount);  
 
-                    controller.GetHit();
+                    if(!controller.isBlocking)
+                        controller.BreakGuard();
+
                     Stats other = overlaps[i].GetComponent<Stats>();
                     if (attackType == AttackType.Kick)
                         stats.BuffAtk *= 1.25f;
 
                     int damage = stats.Attack(other);
                     other.Damage(damage);
+
+                    bool breakGuard = other.BreakGuard(familiars[0].isInFusion ? 2 : 1);
+
+                    if (breakGuard)
+                        controller.GetHit();
 
                     if (familiars[1].isInFusion)
                         stats.Heal(Mathf.RoundToInt(damage / 2f));
