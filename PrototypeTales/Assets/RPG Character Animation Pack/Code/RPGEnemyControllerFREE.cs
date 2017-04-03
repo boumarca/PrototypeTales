@@ -1,21 +1,15 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Runtime.InteropServices;
+using UnityEngine.AI;
 
-public enum Weapon 
+public enum EnemyType
 {
-	UNARMED = 0,
-	RELAX = 8
+    Aggressive,
+    Defensive
 }
 
-public enum AttackType
-{
-    None = -1,
-    Kick,
-    Punch
-}
-	
-public class RPGCharacterControllerFREE : MonoBehaviour 
+public class RPGEnemyControllerFREE : MonoBehaviour 
 {
 	#region Variables
 
@@ -106,6 +100,14 @@ public class RPGCharacterControllerFREE : MonoBehaviour
     GameObject shield;
     [SerializeField]
     Familiar[] familiars;
+    [SerializeField]
+    EnemyType enemyType;
+    [SerializeField]
+    NavMeshAgent agent;
+    [SerializeField]
+    Transform player;
+    [SerializeField]
+    SphereCollider playerDetection;
     #endregion
 
     #region Initialization
@@ -116,7 +118,7 @@ public class RPGCharacterControllerFREE : MonoBehaviour
 		animator = GetComponentInChildren<Animator>();
 		rb = GetComponent<Rigidbody>();
         stats = GetComponent<Stats>();
-        stats.Die += () => StartCoroutine(_Death());
+        stats.Die += () => StartCoroutine(_Death()); 
 	}
 
 	#endregion
@@ -131,7 +133,7 @@ public class RPGCharacterControllerFREE : MonoBehaviour
 		{
 			if(canMove && !isBlocking && !isDead)
 			{
-				CameraRelativeMovement();
+				//CameraRelativeMovement();
 			} 
 			Rolling();
 			Jumping();
@@ -154,14 +156,16 @@ public class RPGCharacterControllerFREE : MonoBehaviour
 				{
 					StartCoroutine(_Revive());
 				}
-			}
-			if(Input.GetButtonDown("AttackL") && canAction && isGrounded && !isBlocking)
+			}			
+			if(canAction && isGrounded && !isBlocking)
 			{
-				Attack();
-			}
-			if(Input.GetButtonDown("AttackR") && canAction && isGrounded && !isBlocking)
-			{
-				Attack();
+                Collider[] overlaps = Physics.OverlapSphere(transform.position, playerDetection.radius, 1 << LayerMask.NameToLayer("Player"));
+                for (int i = 0; i < overlaps.Length; i++)
+                {
+                    if(overlaps[i].GetComponent<RPGCharacterControllerFREE>() != null)
+                        Attack();
+                }
+
 			}
 			if(Input.GetButtonDown("CastL") && canAction && isGrounded && !isBlocking && !isStrafing)
 			{
@@ -210,7 +214,12 @@ public class RPGCharacterControllerFREE : MonoBehaviour
 		//check if character can move
 		if(canMove && !isBlocking && !isDead)
 		{
-			moveSpeed = UpdateMovement();  
+            //moveSpeed = UpdateMovement(); 
+            if (enemyType == EnemyType.Aggressive)
+            {
+                moveSpeed = 1;
+                agent.SetDestination(player.position);
+            } 
 		}
 		//check if falling
 		if(rb.velocity.y < fallingVelocity)
@@ -289,7 +298,7 @@ public class RPGCharacterControllerFREE : MonoBehaviour
 
 	float UpdateMovement()
 	{
-		CameraRelativeMovement();  
+		//CameraRelativeMovement();  
 		Vector3 motion = inputVec;
 		if(isGrounded)
 		{
@@ -338,7 +347,7 @@ public class RPGCharacterControllerFREE : MonoBehaviour
 		newVelocity.y = rb.velocity.y;
 		rb.velocity = newVelocity;
 		//return a movement value for the animator
-		return inputVec.magnitude;
+		return inputVec.magnitude;        
 	}
 
 	#endregion
@@ -425,7 +434,7 @@ public class RPGCharacterControllerFREE : MonoBehaviour
 	{
 		if(!isGrounded)
 		{
-			CameraRelativeMovement();
+			//CameraRelativeMovement();
 			Vector3 motion = inputVec;
 			motion *= (Mathf.Abs(inputVec.x) == 1 && Mathf.Abs(inputVec.z) == 1) ? 0.7f:1;
 			rb.AddForce(motion * inAirSpeed, ForceMode.Acceleration);
@@ -678,7 +687,7 @@ public class RPGCharacterControllerFREE : MonoBehaviour
 	}
 
 	//Animation Events
-	public void Hit()
+	void Hit()
 	{
         Collider c = null;
         if (attackType == AttackType.Punch)
@@ -691,7 +700,7 @@ public class RPGCharacterControllerFREE : MonoBehaviour
             Collider[] overlaps = Physics.OverlapBox(c.bounds.center, c.bounds.extents, c.transform.rotation, 1 << LayerMask.NameToLayer("Enemy"));
             for (int i = 0; i < overlaps.Length; i++)
             {
-                RPGEnemyControllerFREE controller = overlaps[i].GetComponent<RPGEnemyControllerFREE>();
+                RPGCharacterControllerFREE controller = overlaps[i].GetComponent<RPGCharacterControllerFREE>();
                 if (controller != null && !controller.isDead)
                 {
                     
