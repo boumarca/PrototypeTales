@@ -1156,8 +1156,8 @@ MonoBehaviour:
   RawDef: 5
   BuffAtk: 1
   BuffDef: 1
-  MaxHP: 100
-  CurrentHP: 100
+  MaxHP: 200
+  CurrentHP: 200
   healthBar: {fileID: 734889457}
   chargeBar: {fileID: 1674185394}
   StartCharge: 0
@@ -1919,7 +1919,7 @@ MonoBehaviour:
   - {fileID: 471990690}
   - {fileID: 344208370}
   player: {fileID: 673210353}
-  fusionFX: {fileID: 0}
+  fusionFX: {fileID: 1513850378}
   ChargeDecreaseRate: 10
 --- !u!1001 &1063975993
 Prefab:
@@ -3704,6 +3704,10 @@ Prefab:
       propertyPath: m_IsActive
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 5400000, guid: b1cc94d26cd016d479aa5b522d88da0a, type: 2}
+      propertyPath: m_IsKinematic
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 11400000, guid: b1cc94d26cd016d479aa5b522d88da0a, type: 2}
   m_ParentPrefab: {fileID: 100100000, guid: b1cc94d26cd016d479aa5b522d88da0a, type: 2}
@@ -3769,8 +3773,8 @@ MonoBehaviour:
   RawDef: 5
   BuffAtk: 1
   BuffDef: 1
-  MaxHP: 1000
-  CurrentHP: 100
+  MaxHP: 500
+  CurrentHP: 500
   healthBar: {fileID: 2068662328}
   chargeBar: {fileID: 0}
   StartCharge: 0

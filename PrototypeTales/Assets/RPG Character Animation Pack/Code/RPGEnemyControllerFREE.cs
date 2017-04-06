@@ -122,51 +122,68 @@ public class RPGEnemyControllerFREE : MonoBehaviour
 	}
 
 	#endregion
-	
+
 	#region UpdateAndInput
-	
+	float timeBetweenAction = 0.1f;
+	float timeSinceLastAction = 0f;
 	void Update()
 	{
-		
+		timeSinceLastAction += Time.deltaTime;
+		if (timeSinceLastAction < timeBetweenAction)
+			return;
+
+		timeSinceLastAction = 0;
 		//make sure there is animator on character
 		if(animator)
 		{
-			if(canMove && !isBlocking && !isDead)
+			bool isNearPlayer = false;
+            Collider[] overlaps = Physics.OverlapSphere(transform.position, playerDetection.radius, 1 << LayerMask.NameToLayer("Player"));
+			for (int i = 0; i < overlaps.Length; i++)
 			{
-				//CameraRelativeMovement();
-			} 
-			Rolling();
-			Jumping();
-            if (canAction && isGrounded && moveSpeed == 0)
+				if (overlaps[i].GetComponent<RPGCharacterControllerFREE>() != null)
+				{
+					moveSpeed = 0;
+					isNearPlayer = true;
+					//If near player
+					if (canAction && !isBlocking)
+					{
+						Vector3 direction = (player.position - transform.position).normalized;
+						transform.rotation = Quaternion.LookRotation(direction);
+
+						int choice = Random.Range(0, 100);
+						if (choice < 15)
+							Attack();
+						else if (choice < 25)
+							AttackKick();
+
+					}
+				}				
+			}
+
+			//check if character can move
+			if (!isNearPlayer && canMove && !isBlocking && !isDead)
+			{
+				//moveSpeed = UpdateMovement(); 
+				if (enemyType == EnemyType.Aggressive)
+				{
+					moveSpeed = 1;
+					Debug.Log("Move towards player");
+					agent.SetDestination(player.position);
+				}
+			}
+
+
+
+			if (canAction && isGrounded && moveSpeed == 0)
             {
                 Block(Input.GetButton("Shield"));
-            }
+            }            
             
-            if (Input.GetButtonDown("LightHit") && canAction && isGrounded && !isBlocking)
-			{
-				GetHit();
-			}
-			if(Input.GetButtonDown("Death") && canAction && isGrounded && !isBlocking)
-			{
-				if(!isDead)
-				{
-					StartCoroutine(_Death());
-				} 
-				else
-				{
-					StartCoroutine(_Revive());
-				}
-			}			
 			if(canAction && isGrounded && !isBlocking)
 			{
-                Collider[] overlaps = Physics.OverlapSphere(transform.position, playerDetection.radius, 1 << LayerMask.NameToLayer("Player"));
-                for (int i = 0; i < overlaps.Length; i++)
-                {
-                    if(overlaps[i].GetComponent<RPGCharacterControllerFREE>() != null)
-                        Attack();
-                }
-
+				Attack();
 			}
+
 			if(Input.GetButtonDown("CastL") && canAction && isGrounded && !isBlocking && !isStrafing)
 			{
 				AttackKick();
@@ -207,7 +224,7 @@ public class RPGEnemyControllerFREE : MonoBehaviour
 	
 	void FixedUpdate()
 	{
-		CheckForGrounded();
+		/*CheckForGrounded();
 		//apply gravity force
 		rb.AddForce(0, gravity, 0, ForceMode.Acceleration);
 		AirControl();
@@ -231,7 +248,7 @@ public class RPGEnemyControllerFREE : MonoBehaviour
 		else
 		{
 			isFalling = false;
-		}
+		}*/
 	}
 
 	//get velocity of rigid body and pass the value to the animator to control the animations
@@ -357,7 +374,8 @@ public class RPGEnemyControllerFREE : MonoBehaviour
 	//checks if character is within a certain distance from the ground, and markes it IsGrounded
 	void CheckForGrounded()
 	{
-		float distanceToGround;
+		isGrounded = true;
+		/*float distanceToGround;
 		float threshold = .45f;
 		RaycastHit hit;
 		Vector3 offset = new Vector3(0,.4f,0);
@@ -381,7 +399,7 @@ public class RPGEnemyControllerFREE : MonoBehaviour
 			{
 				isGrounded = false;
 			}
-		}
+		}*/
 	}
 
 	void Jumping()
@@ -512,36 +530,35 @@ public class RPGEnemyControllerFREE : MonoBehaviour
 				{
 					attackNumber = Random.Range(6, maxAttacks + 3);
 				}
-				if(isGrounded)
+				
+				if(attackSide != 3)
 				{
-					if(attackSide != 3)
-					{
-						animator.SetTrigger("Attack" + (attackNumber).ToString() + "Trigger");
-						//if(leftWeapon == 12 || leftWeapon == 14 || rightWeapon == 13 || rightWeapon == 15)
-						//{
-						//	StartCoroutine(_LockMovementAndAttack(0, .75f));
-						//} 
-						//else
-						//{
-                            float delay = PunchAttackDelay;
-                            comboCount++;
-                            hasAttacked = true;
-                        attackType = AttackType.Punch;
-                            if (comboCount == maxCombo)
-                            {
-                                Debug.Log("Cooldown");
-                                delay += ComboCooldownTime;
-                                comboCount = 0;
-                            }
-							StartCoroutine(_LockMovementAndAttack(0, delay));
-						//}
-					}
-					else
-					{
-						animator.SetTrigger("AttackDual" + (attackNumber).ToString() + "Trigger");
-						StartCoroutine(_LockMovementAndAttack(0, .75f));
-					}
+					animator.SetTrigger("Attack" + (attackNumber).ToString() + "Trigger");
+					//if(leftWeapon == 12 || leftWeapon == 14 || rightWeapon == 13 || rightWeapon == 15)
+					//{
+					//	StartCoroutine(_LockMovementAndAttack(0, .75f));
+					//} 
+					//else
+					//{
+                        float delay = PunchAttackDelay;
+                        comboCount++;
+                        hasAttacked = true;
+                    attackType = AttackType.Punch;
+                        if (comboCount == maxCombo)
+                        {
+                            Debug.Log("Cooldown");
+                            delay += ComboCooldownTime;
+                            comboCount = 0;
+                        }
+						StartCoroutine(_LockMovementAndAttack(0, delay));
+					//}
 				}
+				else
+				{
+					animator.SetTrigger("AttackDual" + (attackNumber).ToString() + "Trigger");
+					StartCoroutine(_LockMovementAndAttack(0, .75f));
+				}
+				
 			}
 			//2 handed weapons
 			else
@@ -557,29 +574,27 @@ public class RPGEnemyControllerFREE : MonoBehaviour
 
 	void AttackKick()
 	{
-        int kickSide = comboCount % 2 + 1;
-		if(isGrounded)
+        int kickSide = comboCount % 2 + 1;		
+		if(kickSide == 1)
 		{
-			if(kickSide == 1)
-			{
-				animator.SetTrigger("AttackKick1Trigger");
-			}
-			else
-			{
-				animator.SetTrigger("AttackKick2Trigger");
-			}
-            float delay = KickAttackDelay;
-            comboCount++;
-            hasAttacked = true;
-            attackType = AttackType.Kick;
-            if (comboCount == maxCombo)
-            {
-                Debug.Log("Cooldown");
-                delay += ComboCooldownTime;
-                comboCount = 0;
-            }
-            StartCoroutine(_LockMovementAndAttack(0, delay));
+			animator.SetTrigger("AttackKick1Trigger");
 		}
+		else
+		{
+			animator.SetTrigger("AttackKick2Trigger");
+		}
+        float delay = KickAttackDelay;
+        comboCount++;
+        hasAttacked = true;
+        attackType = AttackType.Kick;
+        if (comboCount == maxCombo)
+        {
+            Debug.Log("Cooldown");
+            delay += ComboCooldownTime;
+            comboCount = 0;
+        }
+        StartCoroutine(_LockMovementAndAttack(0, delay));
+		
 	}
 
 	//0 = No side
@@ -697,19 +712,12 @@ public class RPGEnemyControllerFREE : MonoBehaviour
 
         if (c != null)
         {
-            Collider[] overlaps = Physics.OverlapBox(c.bounds.center, c.bounds.extents, c.transform.rotation, 1 << LayerMask.NameToLayer("Enemy"));
+            Collider[] overlaps = Physics.OverlapBox(c.bounds.center, c.bounds.extents, c.transform.rotation, 1 << LayerMask.NameToLayer("Player"));
             for (int i = 0; i < overlaps.Length; i++)
             {
                 RPGCharacterControllerFREE controller = overlaps[i].GetComponent<RPGCharacterControllerFREE>();
                 if (controller != null && !controller.isDead)
-                {
-                    
-                    if(!familiars[(int)attackType].isInFusion)
-                        familiars[(int)attackType].IncreaseCharge(attackChargeAmount);
-
-                    if(!stats.IsInFusion)
-                        stats.IncreaseCharge(attackChargeAmount);  
-
+                {    
                     if(!controller.isBlocking)
                         controller.BreakGuard();
 
@@ -720,15 +728,13 @@ public class RPGEnemyControllerFREE : MonoBehaviour
                     int damage = stats.Attack(other);
                     other.Damage(damage);
 
-                    bool breakGuard = other.BreakGuard(familiars[0].isInFusion ? 2 : 1);
+                    bool breakGuard = other.BreakGuard(1);
 
                     if (breakGuard)
                         controller.GetHit();
 
-                    if (familiars[1].isInFusion)
-                        stats.Heal(Mathf.RoundToInt(damage / 2f));
 
-                    if (attackType == AttackType.Kick)
+					if (attackType == AttackType.Kick)
                         stats.BuffAtk /= 1.25f;
                 }
             } 
