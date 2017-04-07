@@ -82,7 +82,7 @@ public class RPGCharacterControllerFREE : MonoBehaviour
     //My stuff
     [Header("My stuff")]
     int comboCount;
-    bool hasAttacked;
+    public bool hasAttacked { get; private set; }
     AttackType attackType;
     Stats stats;
 

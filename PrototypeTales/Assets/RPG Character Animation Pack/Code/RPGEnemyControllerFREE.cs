@@ -140,7 +140,8 @@ public class RPGEnemyControllerFREE : MonoBehaviour
             Collider[] overlaps = Physics.OverlapSphere(transform.position, playerDetection.radius, 1 << LayerMask.NameToLayer("Player"));
 			for (int i = 0; i < overlaps.Length; i++)
 			{
-				if (overlaps[i].GetComponent<RPGCharacterControllerFREE>() != null)
+				var controller = overlaps[i].GetComponent<RPGCharacterControllerFREE>();
+				if (controller != null)
 				{
 					moveSpeed = 0;
 					isNearPlayer = true;
@@ -150,12 +151,19 @@ public class RPGEnemyControllerFREE : MonoBehaviour
 						Vector3 direction = (player.position - transform.position).normalized;
 						transform.rotation = Quaternion.LookRotation(direction);
 
-						int choice = Random.Range(0, 100);
-						if (choice < 15)
-							Attack();
-						else if (choice < 25)
-							AttackKick();
-
+						if (controller.hasAttacked)
+						{
+							Block(true);
+						}
+						else
+						{
+							Block(false);
+							int choice = Random.Range(0, 100);
+							if (choice < 15)
+								Attack();
+							else if (choice < 25)
+								AttackKick();
+						}
 					}
 				}				
 			}
